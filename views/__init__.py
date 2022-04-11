@@ -21,3 +21,4 @@ from .customer_requests import get_all_customers
 from .customer_requests import create_customer
 from .customer_requests import delete_customer
 from .customer_requests import update_customer
+from .customer_requests import get_customers_by_email
