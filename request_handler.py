@@ -1,9 +1,11 @@
 from http.server import BaseHTTPRequestHandler, HTTPServer
-from views import get_all_animals, get_single_animal, create_animal, delete_animal, update_animal
+from views import get_all_animals, get_single_animal, create_animal, delete_animal, update_animal, get_animals_by_location, get_animals_by_status
 from views import get_all_locations, get_single_location, create_location, delete_location, update_location
-from views import get_all_employees, get_single_employee, create_employee, delete_employee, update_employee
+from views import get_all_employees, get_single_employee, create_employee, delete_employee, update_employee, get_employees_by_location
 from views import get_all_customers, get_single_customer, create_customer, delete_customer, update_customer, get_customers_by_email
 import json
+
+
 
 
 # Here's a class. It inherits from another class.
@@ -139,6 +141,14 @@ class HandleRequests(BaseHTTPRequestHandler):
             # email as a filtering value?
             if key == "email" and resource == "customers":
                 response = get_customers_by_email(value)
+
+            if key == "location_id" and resource == "animals":
+                response = get_animals_by_location(value)
+            if key == "status" and resource == "animals":
+                response = get_animals_by_status(value)
+
+            if key == "location_id" and resource == "employees":
+                response = get_employees_by_location(value)
         # This weird code sends a response back to the client
         self.wfile.write(f"{response}".encode())
 
@@ -207,7 +217,11 @@ class HandleRequests(BaseHTTPRequestHandler):
 
         # Delete a single animal from the list
         if resource == "animals":
-            update_animal(id, post_body)
+            success = update_animal(id, post_body)
+        if success:
+            self._set_headers(204)
+        else:
+            self._set_headers(404)
 
         if resource == "customers":
             update_customer(id, post_body)

@@ -2,6 +2,8 @@ from models import Employee
 import sqlite3
 import json
 
+from models.location import Location
+
 EMPLOYEES = [
         {
             "id": 1,
@@ -28,8 +30,12 @@ def get_all_employees():
             e.id,
             e.name,
             e.address,
-            e.location_id
-        FROM employee e
+            e.location_id,
+            l.name location_name,
+            l.address location_address
+        FROM Employee e
+            JOIN Location l
+                on l.id = e.location_id
         """)
 
         # Initialize an empty list to hold all animal representations
@@ -48,9 +54,13 @@ def get_all_employees():
             employee = Employee(row['id'], row['name'], row['address'],
                             row['location_id'])
                             
+            # Create a Location instance from the current row
+            location = Location(row['id'], row['location_name'], row['location_address'])
+
+            employee.location = location.__dict__
+
 
             employees.append(employee.__dict__)
-
     # Use `json` package to properly serialize list as JSON
     return json.dumps(employees)
 
@@ -123,3 +133,30 @@ def update_employee(id, new_employee):
             # Found the animal. Update the value.
             EMPLOYEES[index] = new_employee
             break
+
+
+def get_employees_by_location(location):
+
+    with sqlite3.connect("./kennel.sqlite3") as conn:
+        conn.row_factory = sqlite3.Row
+        db_cursor = conn.cursor()
+
+        # Write the SQL query to get the information you want
+        db_cursor.execute("""
+        select
+            e.id,
+            e.name,
+            e.address,
+            e.location_id
+        from Employee e
+        WHERE e.location_id = ?
+        """, ( location, ))
+
+        employees = []
+        dataset = db_cursor.fetchall()
+
+        for row in dataset:
+            employee = Employee(row['id'], row['name'], row['address'], row['location_id'])
+            employees.append(employee.__dict__)
+
+    return json.dumps(employees)
